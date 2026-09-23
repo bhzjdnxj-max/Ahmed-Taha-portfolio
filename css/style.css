@@ -1,0 +1,800 @@
+/* 
+==========================================================================
+   Base & Reset
+========================================================================== */
+:root {
+    --bg-primary: #050a15;
+    --bg-secondary: #0a1128;
+    --bg-card: #111a3a;
+    --text-primary: #ffffff;
+    --text-secondary: #b0c4de;
+    --accent: #3b82f6;
+    --border-color: rgba(59, 130, 246, 0.15);
+    
+    --font-display: 'Outfit', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    
+    --transition: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* 
+==========================================================================
+   View Management
+========================================================================== */
+.view {
+    display: none;
+    opacity: 0;
+    transition: opacity var(--transition);
+    min-height: 100vh;
+    padding: 3rem 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.view.active {
+    display: block;
+    opacity: 1;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 
+==========================================================================
+   Profile Header
+========================================================================== */
+.profile-header {
+    text-align: center;
+    margin-bottom: 4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.profile-image-container {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    margin-bottom: 1.5rem;
+    padding: 6px;
+    background: linear-gradient(135deg, var(--bg-secondary), var(--border-color));
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    position: relative;
+}
+
+.profile-image-container::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.1);
+    pointer-events: none;
+}
+
+.profile-image {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    /* Perfect crop for the provided image */
+    object-fit: cover;
+    /* Adjusts the focus to his head on the left side of the frame */
+    object-position: 25% 35%;
+    display: block;
+    filter: contrast(1.05) brightness(1.02);
+    transition: transform var(--transition);
+}
+
+.profile-image-container:hover .profile-image {
+    transform: scale(1.03);
+}
+
+.name {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.title {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+}
+
+.intro {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    max-width: 500px;
+    margin: 0 auto 2rem auto;
+    font-weight: 300;
+}
+
+.experience-compact {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.exp-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.exp-years {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--text-primary);
+}
+
+.exp-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.2rem;
+}
+
+/* 
+==========================================================================
+   Decorative Visuals
+========================================================================== */
+.decorative-banner {
+    max-width: 900px;
+    margin: 0 auto 5rem auto;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    border: 1px solid var(--border-color);
+}
+
+.dec-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    max-height: 250px;
+    opacity: 0.85;
+    transition: opacity var(--transition), transform var(--transition);
+}
+
+.decorative-banner:hover .dec-img {
+    opacity: 1;
+    transform: scale(1.02);
+}
+
+/* 
+==========================================================================
+   Info Sections
+========================================================================== */
+.info-sections {
+    max-width: 900px;
+    margin: 0 auto 5rem auto;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.info-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.info-card h3 {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+.info-card p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.clean-list {
+    list-style: none;
+    padding: 0;
+}
+
+.clean-list li {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+}
+
+.clean-list li::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-right: 0.75rem;
+}
+
+.clean-list li:last-child {
+    border-bottom: none;
+}
+
+.skills-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.skill-tag {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--accent);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    padding: 0.4rem 0.8rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* 
+==========================================================================
+   Categories Grid
+========================================================================== */
+.categories-container {
+    margin-bottom: 5rem;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.category-btn {
+    background-color: var(--bg-secondary);
+    background-size: cover;
+    background-position: center;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem 1rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    aspect-ratio: 1 / 1;
+    text-align: left;
+    transition: all var(--transition);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.category-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(5, 10, 21, 0.4) 0%, rgba(5, 10, 21, 0.9) 100%);
+    z-index: -1;
+    transition: opacity var(--transition);
+}
+
+.category-btn:hover::before, .category-btn:focus-visible::before {
+    background: linear-gradient(to bottom, rgba(5, 10, 21, 0.2) 0%, rgba(5, 10, 21, 0.75) 100%);
+}
+
+.category-btn:hover, .category-btn:focus-visible {
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    outline: none;
+}
+
+.cat-number {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 300;
+    opacity: 0.6;
+}
+
+.cat-name {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: var(--text-primary);
+}
+
+/* 
+==========================================================================
+   Contact Section
+========================================================================== */
+.contact-section {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 4rem;
+}
+
+.contact-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.8rem 1.5rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all var(--transition);
+}
+
+.contact-link:hover {
+    background: var(--text-primary);
+    color: var(--bg-primary);
+}
+
+.contact-link i {
+    font-size: 1.1rem;
+}
+
+.main-footer {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    opacity: 0.5;
+}
+
+/* 
+==========================================================================
+   Gallery View
+========================================================================== */
+.gallery-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color var(--transition);
+    position: absolute;
+    left: 0;
+}
+
+.back-btn:hover {
+    color: var(--text-primary);
+}
+
+.gallery-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    width: 100%;
+    text-align: center;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.project-card {
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bg-secondary);
+    cursor: pointer;
+    position: relative;
+    aspect-ratio: 4/5;
+    group: relative;
+}
+
+/* Different sizes for visual interest */
+.project-card.wide {
+    grid-column: span 2;
+    aspect-ratio: 16/9;
+}
+
+.project-card img, .project-card video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.project-card:hover img, .project-card:hover video {
+    transform: scale(1.05);
+}
+
+.project-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 50%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1.5rem;
+    opacity: 0;
+    transition: opacity var(--transition);
+}
+
+.project-card:hover .project-overlay {
+    opacity: 1;
+}
+
+.project-card-title {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+}
+
+.project-card-type {
+    font-size: 0.75rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 5rem 0;
+    color: var(--text-secondary);
+    font-family: var(--font-display);
+    letter-spacing: 0.05em;
+}
+
+/* 
+==========================================================================
+   Lightbox
+========================================================================== */
+.lightbox {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10, 11, 13, 0.98);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition);
+    padding: 2rem;
+}
+
+.lightbox.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color var(--transition);
+    z-index: 1001;
+}
+
+.lightbox-close:hover {
+    color: var(--accent);
+}
+
+.lightbox-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    max-width: 1400px;
+    width: 100%;
+    max-height: 90vh;
+    gap: 1.5rem;
+}
+
+.lightbox-media-container {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+}
+
+.lightbox-media-container img,
+.lightbox-media-container video {
+    max-width: 100%;
+    max-height: 70vh;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.lightbox-info {
+    text-align: center;
+}
+
+.lightbox-info h3 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.lightbox-info p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    max-width: 600px;
+    margin: 0 auto 1rem auto;
+}
+
+.project-link-btn {
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    text-decoration: none;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: all var(--transition);
+}
+
+.project-link-btn:hover {
+    background: var(--accent);
+    color: var(--bg-primary);
+}
+
+/* 
+==========================================================================
+   Responsive — Tablet (768px and below)
+========================================================================== */
+@media (max-width: 768px) {
+
+    /* View padding */
+    .view {
+        padding: 2rem 1rem;
+    }
+
+    /* Profile header */
+    .profile-image-container {
+        width: 130px;
+        height: 130px;
+    }
+
+    .name {
+        font-size: 1.6rem;
+    }
+
+    .title {
+        font-size: 0.72rem;
+    }
+
+    .intro {
+        font-size: 0.9rem;
+    }
+
+    /* Experience compact row wraps nicely */
+    .experience-compact {
+        gap: 1.25rem;
+    }
+
+    /* Categories: 2 columns on tablet */
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.85rem;
+    }
+
+    .category-btn {
+        aspect-ratio: 1 / 1;
+        padding: 1rem 0.85rem;
+    }
+
+    .cat-name {
+        font-size: 0.82rem;
+    }
+
+    /* Clients section: 2 columns */
+    .clients-section .visual-gallery-grid,
+    #main-clients-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1.25rem !important;
+    }
+
+    /* Contact links: full width pairs */
+    .contact-section {
+        gap: 0.75rem;
+    }
+
+    .contact-link {
+        width: calc(50% - 0.375rem);
+        justify-content: center;
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    /* Gallery grid: single column */
+    .gallery-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .project-card.wide {
+        grid-column: span 1;
+        aspect-ratio: 4/3;
+    }
+
+    .gallery-title {
+        font-size: 1.2rem;
+    }
+
+    /* Gallery header back button alignment */
+    .gallery-header {
+        margin-bottom: 2rem;
+    }
+
+    /* Info sections */
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .info-card {
+        padding: 1.5rem;
+    }
+
+    /* Lightbox */
+    .lightbox {
+        padding: 1rem;
+    }
+
+    .lightbox-close {
+        top: 1rem;
+        right: 1rem;
+    }
+
+    .lightbox-media-container img,
+    .lightbox-media-container video {
+        max-height: 55vh;
+    }
+
+    /* Cinematic concept text */
+    .cinematic-concept p {
+        font-size: 1.1rem !important;
+        letter-spacing: 1px !important;
+    }
+
+    /* Section headings inside clients */
+    .clients-section h2 {
+        font-size: 1.8rem !important;
+        margin-bottom: 2rem !important;
+    }
+}
+
+/* 
+==========================================================================
+   Responsive — Small phones (480px and below)
+========================================================================== */
+@media (max-width: 480px) {
+
+    .view {
+        padding: 1.5rem 0.85rem;
+    }
+
+    .profile-image-container {
+        width: 110px;
+        height: 110px;
+    }
+
+    .name {
+        font-size: 1.35rem;
+    }
+
+    /* Categories: 2 columns still, smaller buttons */
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.65rem;
+    }
+
+    .category-btn {
+        padding: 0.85rem 0.7rem;
+    }
+
+    .cat-name {
+        font-size: 0.75rem;
+    }
+
+    /* Clients: single column on very small screens */
+    .clients-section .visual-gallery-grid,
+    #main-clients-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+    }
+
+    /* Contact links: stack full width */
+    .contact-link {
+        width: 100%;
+    }
+
+    /* Experience items: smaller text */
+    .exp-years {
+        font-size: 0.72rem;
+    }
+
+    .exp-label {
+        font-size: 0.68rem;
+    }
+
+    .clients-section h2 {
+        font-size: 1.4rem !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

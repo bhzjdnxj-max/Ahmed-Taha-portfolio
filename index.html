@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ahmed Taha — Photographer & Videographer</title>
+    
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Main View: Profile and Categories -->
+    <main id="main-view" class="view active">
+        
+        <!-- Profile Header -->
+        <header class="profile-header">
+            <div class="profile-image-container">
+                <!-- We will use object-position in CSS to crop this perfectly -->
+                <img src="assets/profile.jpg" alt="Ahmed Taha Profile" class="profile-image" id="profile-img">
+            </div>
+            
+            <h1 class="name">AHMED TAHA</h1>
+            <h2 class="title">PHOTOGRAPHER &middot; VIDEOGRAPHER &middot; VIDEO EDITOR</h2>
+            
+            <p class="intro">
+                Visual creator focused on photography, videography, editing, and visual storytelling.
+            </p>
+
+            <div class="experience-compact">
+                <div class="exp-item">
+                    <span class="exp-years">6+ YEARS</span>
+                    <span class="exp-label">Photography</span>
+                </div>
+                <div class="exp-item">
+                    <span class="exp-years">1.5 YEARS</span>
+                    <span class="exp-label">Videography & Video Editing</span>
+                </div>
+                <div class="exp-item">
+                    <span class="exp-years">CURRENT</span>
+                    <span class="exp-label">Marketeria Agency</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Decorative Cinematic Visual 1 -->
+        <div class="decorative-banner">
+            <img src="assets/cinematic_lens.jpg" alt="Cinematic lens" class="dec-img">
+        </div>
+
+        <!-- Categories Grid -->
+        <section class="categories-container">
+            <div class="categories-grid">
+                <button class="category-btn" data-category="Wedding" style="background-image: url('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600');">
+                    <span class="cat-number">01</span>
+                    <span class="cat-name">WEDDING</span>
+                </button>
+                <button class="category-btn" data-category="Product" style="background-image: url('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=600');">
+                    <span class="cat-number">02</span>
+                    <span class="cat-name">PRODUCT</span>
+                </button>
+                <button class="category-btn" data-category="Food" style="background-image: url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&q=80&w=600');">
+                    <span class="cat-number">03</span>
+                    <span class="cat-name">FOOD</span>
+                </button>
+                <button class="category-btn" data-category="Events" style="background-image: url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=600');">
+                    <span class="cat-number">04</span>
+                    <span class="cat-name">EVENTS</span>
+                </button>
+                <button class="category-btn" data-category="Real Estate" style="background-image: url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=600');">
+                    <span class="cat-number">05</span>
+                    <span class="cat-name">REAL ESTATE</span>
+                </button>
+                <button class="category-btn" data-category="Social Media" style="background-image: url('https://images.unsplash.com/photo-1562577309-4932fdd64cd1?auto=format&fit=crop&q=80&w=600');">
+                    <span class="cat-number">06</span>
+                    <span class="cat-name">SOCIAL MEDIA</span>
+                </button>
+                <button class="category-btn" data-category="Video Editing" style="background-image: url('https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&q=80&w=600');">
+                    <span class="cat-number">07</span>
+                    <span class="cat-name">VIDEO EDITING</span>
+                </button>
+                <button class="category-btn" data-category="Photography" style="background-image: url('https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=600');">
+                    <span class="cat-number">08</span>
+                    <span class="cat-name">PHOTOGRAPHY</span>
+                </button>
+            </div>
+        </section>
+
+
+        <!-- Clients Section (Large Images) -->
+        <section class="clients-section" style="padding: 4rem 2rem; text-align: center; max-width: 1200px; margin: 0 auto;">
+            <h2 style="font-family: var(--font-display); font-size: 2.5rem; margin-bottom: 3rem; letter-spacing: 2px; text-transform: uppercase;">Clients I've Worked With</h2>
+            
+            <div id="main-clients-grid" class="visual-gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <!-- Empty state layout that looks premium -->
+                <div class="empty-gallery-placeholder" style="border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); aspect-ratio: 4/5; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.1); transition: all 0.3s ease;">
+                </div>
+                <div class="empty-gallery-placeholder" style="border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); aspect-ratio: 4/5; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.1); transition: all 0.3s ease;">
+                </div>
+                <div class="empty-gallery-placeholder" style="border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); aspect-ratio: 4/5; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.1); transition: all 0.3s ease;">
+                </div>
+            </div>
+            <div id="main-clients-empty" style="display: none;"></div>
+        </section>
+
+        <!-- Additional Content Sections -->
+        <section class="info-sections">
+            <div class="info-card" style="max-width: 800px; margin: 0 auto;">
+                <h3>About Me</h3>
+                <p>I'm Ahmed Taha, a visual content creator with 6 years of photography experience and professional expertise in videography and editing. Currently a fifth-year Pharmacy student at Deraya University. My background in marketing allows me to create visuals that not only look cinematic but also drive engagement.</p>
+                
+                <h3 style="margin-top: 2rem;">Creative Approach</h3>
+                <p>My work combines strong technical execution with compelling storytelling. Whether capturing a wedding, directing a commercial, or editing a fast-paced reel, my goal is to deliver an elegant, professional, and memorable visual experience.</p>
+                
+                <h3 style="margin-top: 2rem;">Services</h3>
+                <ul class="clean-list">
+                    <li>Photography & Videography</li>
+                    <li>Professional Video Editing</li>
+                    <li>Social Media Reels & Commercials</li>
+                    <li>Event & Wedding Coverage</li>
+                    <li>Real Estate & Brand Content</li>
+                </ul>
+                
+                <h3 style="margin-top: 2rem;">Skills</h3>
+                <div class="skills-tags">
+                    <span class="skill-tag">Cinematography</span>
+                    <span class="skill-tag">Color Grading</span>
+                    <span class="skill-tag">Visual Storytelling</span>
+                    <span class="skill-tag">Marketing Strategy</span>
+                    <span class="skill-tag">Lighting Design</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Links -->
+        <section class="contact-section">
+            <a href="https://www.instagram.com/ahmedtaha7_7?stkn=bDkwOTNrZGp1eXky" target="_blank" rel="noopener noreferrer" class="contact-link">
+                <i class="fa-brands fa-instagram"></i>
+                <span>Instagram</span>
+            </a>
+            <a href="https://www.facebook.com/share/1Dy1P4yZug/" target="_blank" rel="noopener noreferrer" class="contact-link">
+                <i class="fa-brands fa-facebook-f"></i>
+                <span>Facebook</span>
+            </a>
+            <a href="https://wa.me/201125240606" target="_blank" rel="noopener noreferrer" class="contact-link">
+                <i class="fa-brands fa-whatsapp"></i>
+                <span>WhatsApp</span>
+            </a>
+            <a href="mailto:ahmedtaha7a@gmail.com" class="contact-link">
+                <i class="fa-regular fa-envelope"></i>
+                <span>Email</span>
+            </a>
+        </section>
+
+        <footer class="main-footer">
+            <p>&copy; <span id="year"></span> Ahmed Taha. All rights reserved.</p>
+        </footer>
+
+    </main>
+
+    <!-- Gallery View (Hidden initially) -->
+    <section id="gallery-view" class="view">
+        <header class="gallery-header">
+            <button id="back-btn" class="back-btn">
+                <i class="fa-solid fa-arrow-left"></i> BACK
+            </button>
+            <h2 id="gallery-title" class="gallery-title">CATEGORY</h2>
+        </header>
+
+        <div id="gallery-grid" class="gallery-grid">
+            <!-- Dynamic content will be injected here -->
+        </div>
+        
+        <div id="gallery-empty" class="empty-state" style="display: none;">
+            <p>No projects published yet.</p>
+        </div>
+    </section>
+
+    <!-- Lightbox for Media -->
+    <div id="lightbox" class="lightbox">
+        <button id="lightbox-close" class="lightbox-close"><i class="fa-solid fa-xmark"></i></button>
+        <div class="lightbox-content-wrapper">
+            <div id="lightbox-media-container" class="lightbox-media-container">
+                <!-- Image or Video injected here -->
+            </div>
+            <div class="lightbox-info">
+                <h3 id="lightbox-title">Project Title</h3>
+                <p id="lightbox-desc">Project description goes here.</p>
+                <a id="lightbox-link" href="#" target="_blank" class="project-link-btn" style="display: none;">View Project</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
