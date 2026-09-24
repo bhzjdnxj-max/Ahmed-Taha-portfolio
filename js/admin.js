@@ -215,7 +215,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
                 const filePath = `projects/${fileName}`;
 
-                const { error: uploadError } = await supabase.storage.from('portfolio-media').upload(filePath, file);
+                let contentType = file.type;
+                if (!contentType || contentType === '') {
+                    if (type === 'video') {
+                        if (fileExt === 'mov') contentType = 'video/quicktime';
+                        else if (fileExt === 'webm') contentType = 'video/webm';
+                        else if (fileExt === 'mkv') contentType = 'video/x-matroska';
+                        else if (fileExt === 'avi') contentType = 'video/x-msvideo';
+                        else if (fileExt === 'm4v') contentType = 'video/x-m4v';
+                        else contentType = 'video/mp4';
+                    } else {
+                        contentType = 'image/jpeg';
+                    }
+                }
+
+                const { error: uploadError } = await supabase.storage.from('portfolio-media').upload(filePath, file, {
+                    contentType: contentType
+                });
                 
                 if (uploadError) throw uploadError;
 
