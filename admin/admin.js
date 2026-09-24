@@ -242,18 +242,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { data } = supabase.storage.from('portfolio-media').getPublicUrl(filePath);
                 media_url = data.publicUrl;
             } else if (!id) {
-                // New projects no longer require a media file.
-                // It will be saved without media.
+                throw new Error('A media file is required for new projects.');
             }
 
             const projectData = {
                 title, category, description, project_link, published,
-                type  // Always include type (defaults to 'image' when no file uploaded)
+                type,
+                media_url
             };
-
-            if (media_url) {
-                projectData.media_url = media_url;
-            }
 
             if (id) {
                 const { error } = await supabase.from('projects').update(projectData).eq('id', id);
