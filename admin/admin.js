@@ -207,11 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (fileInput.files.length > 0) {
                 const file = fileInput.files[0];
-                // Detect video by MIME type (mp4, mov, webm, m4v, mkv, etc.)
-                const videoMimeTypes = ['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v', 'video/x-matroska', 'video/avi', 'video/x-msvideo'];
-                const videoExtensions = ['mp4', 'mov', 'webm', 'm4v', 'mkv', 'avi'];
-                const fileExt = file.name.split('.').pop().toLowerCase();
-                type = (file.type.startsWith('video/') || videoMimeTypes.includes(file.type) || videoExtensions.includes(fileExt)) ? 'video' : 'image';
+                type = file.type.startsWith('video/') ? 'video' : 'image';
+                const fileExt = file.name.split('.').pop();
                 const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
                 const filePath = `projects/${fileName}`;
 
