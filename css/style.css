@@ -756,8 +756,8 @@ body {
         letter-spacing: 1px !important;
     }
 
-    /* Section headings inside clients */
-    .clients-section h2 {
+    /* Section headings */
+    .clients-section h2, .categories-container h2 {
         font-size: 1.8rem !important;
         margin-bottom: 2rem !important;
     }
@@ -817,7 +817,7 @@ body {
         font-size: 0.68rem;
     }
 
-    .clients-section h2 {
+    .clients-section h2, .categories-container h2 {
         font-size: 1.4rem !important;
     }
 }
