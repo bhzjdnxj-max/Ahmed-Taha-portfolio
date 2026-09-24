@@ -171,6 +171,11 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('portfolio-media', 'portfolio-media', true)
 ON CONFLICT (id) DO NOTHING;
 
+-- Configure bucket to allow specific video and image formats
+UPDATE storage.buckets
+SET allowed_mime_types = ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v', 'video/x-matroska', 'video/avi', 'video/x-msvideo']
+WHERE id = 'portfolio-media';
+
 -- Safely drop and recreate storage policies
 DO $$ 
 BEGIN

@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let mediaElement = '';
             if (project.type === 'video') {
-                mediaElement = `<video src="${project.media_url}" muted loop playsinline onmouseover="this.play()" onmouseout="this.pause()"></video>`;
+                mediaElement = `<video src="${project.media_url}" muted loop playsinline onmouseover="this.play()" onmouseout="this.pause()">Your browser does not support this video format. <a href="${project.media_url}" target="_blank">Download</a></video>`;
             } else {
                 mediaElement = `<img src="${project.media_url}" alt="${project.title || 'Project'}" loading="lazy">`;
             }
@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
         lightboxMediaContainer.innerHTML = '';
         
         if (project.type === 'video') {
-            lightboxMediaContainer.innerHTML = `<video src="${project.media_url}" controls autoplay playsinline></video>`;
+            lightboxMediaContainer.innerHTML = `<video src="${project.media_url}" controls autoplay playsinline>Your browser does not support this video format. <a href="${project.media_url}" target="_blank" style="color:#3b82f6;">Download</a></video>`;
         } else {
             lightboxMediaContainer.innerHTML = `<img src="${project.media_url}" alt="${project.title}">`;
         }

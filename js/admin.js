@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             let mediaHtml = '';
             if (p.type === 'video') {
-                mediaHtml = `<video src="${p.media_url}" class="thumb" muted></video>`;
+                mediaHtml = `<video src="${p.media_url}" class="thumb" muted>Unsupported format</video>`;
             } else {
                 mediaHtml = `<img src="${p.media_url}" class="thumb">`;
             }
