@@ -238,7 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { data } = supabase.storage.from('portfolio-media').getPublicUrl(filePath);
                 media_url = data.publicUrl;
             } else if (!id) {
-                throw new Error("A media file is required for new projects.");
+                // New projects no longer require a media file.
+                // It will be saved without media.
             }
 
             const projectData = {

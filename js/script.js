@@ -160,10 +160,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             let mediaElement = '';
-            if (project.type === 'video') {
-                mediaElement = `<video src="${project.media_url}" muted loop playsinline onmouseover="this.play()" onmouseout="this.pause()">Your browser does not support this video format. <a href="${project.media_url}" target="_blank">Download</a></video>`;
+            if (project.media_url) {
+                if (project.type === 'video') {
+                    mediaElement = `<video src="${project.media_url}" muted loop playsinline onmouseover="this.play()" onmouseout="this.pause()">Your browser does not support this video format. <a href="${project.media_url}" target="_blank">Download</a></video>`;
+                } else {
+                    mediaElement = `<img src="${project.media_url}" alt="${project.title || 'Project'}" loading="lazy">`;
+                }
             } else {
-                mediaElement = `<img src="${project.media_url}" alt="${project.title || 'Project'}" loading="lazy">`;
+                mediaElement = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; opacity: 0.1;"><i class="fa-solid fa-image fa-3x"></i></div>`;
             }
 
             card.innerHTML = `
@@ -274,10 +278,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function openLightbox(project) {
         lightboxMediaContainer.innerHTML = '';
         
-        if (project.type === 'video') {
-            lightboxMediaContainer.innerHTML = `<video src="${project.media_url}" controls autoplay playsinline>Your browser does not support this video format. <a href="${project.media_url}" target="_blank" style="color:#3b82f6;">Download</a></video>`;
+        if (project.media_url) {
+            if (project.type === 'video') {
+                lightboxMediaContainer.innerHTML = `<video src="${project.media_url}" controls autoplay playsinline>Your browser does not support this video format. <a href="${project.media_url}" target="_blank" style="color:#3b82f6;">Download</a></video>`;
+            } else {
+                lightboxMediaContainer.innerHTML = `<img src="${project.media_url}" alt="${project.title}">`;
+            }
         } else {
-            lightboxMediaContainer.innerHTML = `<img src="${project.media_url}" alt="${project.title}">`;
+            lightboxMediaContainer.innerHTML = `<div style="padding: 4rem; text-align: center; color: var(--text-secondary);"><i class="fa-solid fa-image fa-4x" style="opacity: 0.2;"></i></div>`;
         }
 
         lightboxTitle.textContent = project.title || 'Untitled';
