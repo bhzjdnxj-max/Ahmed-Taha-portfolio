@@ -247,12 +247,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const projectData = {
-                title, category, description, project_link, published
+                title, category, description, project_link, published,
+                type  // Always include type (defaults to 'image' when no file uploaded)
             };
 
             if (media_url) {
                 projectData.media_url = media_url;
-                projectData.type = type;
             }
 
             if (id) {
