@@ -239,10 +239,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(uploadError.message || JSON.stringify(uploadError));
                 }
 
-                const { data } = supabase.storage.from('portfolio-media').getPublicUrl(filePath);
-                media_url = data.publicUrl;
+                // Construct the public URL directly — more reliable than getPublicUrl()
+                media_url = `${SUPABASE_URL}/storage/v1/object/public/portfolio-media/${filePath}`;
+                console.log('media_url set to:', media_url);
             } else if (!id) {
                 throw new Error('A media file is required for new projects.');
+            }
+
+            // Safety check — never insert with a null/empty media_url for new projects
+            if (!id && !media_url) {
+                throw new Error('Upload completed but media URL could not be resolved. Please try again.');
             }
 
             const projectData = {
@@ -251,6 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 media_url
             };
 
+            console.log('Inserting project with media_url:', projectData.media_url);
             if (id) {
                 const { error } = await supabase.from('projects').update(projectData).eq('id', id);
                 if (error) throw error;
