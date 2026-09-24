@@ -229,11 +229,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
+                console.log('Uploading:', filePath, 'contentType:', contentType);
                 const { error: uploadError } = await supabase.storage.from('portfolio-media').upload(filePath, file, {
                     contentType: contentType
                 });
                 
-                if (uploadError) throw uploadError;
+                if (uploadError) {
+                    console.error('Upload error:', uploadError);
+                    throw new Error(uploadError.message || JSON.stringify(uploadError));
+                }
 
                 const { data } = supabase.storage.from('portfolio-media').getPublicUrl(filePath);
                 media_url = data.publicUrl;

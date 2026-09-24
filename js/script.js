@@ -162,7 +162,11 @@ document.addEventListener('DOMContentLoaded', () => {
             let mediaElement = '';
             if (project.media_url) {
                 if (project.type === 'video') {
-                    mediaElement = `<video src="${project.media_url}" muted loop playsinline onmouseover="this.play()" onmouseout="this.pause()">Your browser does not support this video format. <a href="${project.media_url}" target="_blank">Download</a></video>`;
+                    // Derive MIME type from URL extension for correct browser playback
+                    const ext = project.media_url.split('.').pop().split('?')[0].toLowerCase();
+                    const mimeMap = { mp4: 'video/mp4', mov: 'video/quicktime', webm: 'video/webm', m4v: 'video/mp4', mkv: 'video/x-matroska', avi: 'video/x-msvideo' };
+                    const mimeType = mimeMap[ext] || 'video/mp4';
+                    mediaElement = `<video muted loop playsinline onmouseover="this.play()" onmouseout="this.pause()"><source src="${project.media_url}" type="${mimeType}">Your browser does not support this video format. <a href="${project.media_url}" target="_blank">Download</a></video>`;
                 } else {
                     mediaElement = `<img src="${project.media_url}" alt="${project.title || 'Project'}" loading="lazy">`;
                 }
@@ -280,7 +284,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (project.media_url) {
             if (project.type === 'video') {
-                lightboxMediaContainer.innerHTML = `<video src="${project.media_url}" controls autoplay playsinline>Your browser does not support this video format. <a href="${project.media_url}" target="_blank" style="color:#3b82f6;">Download</a></video>`;
+                const ext = project.media_url.split('.').pop().split('?')[0].toLowerCase();
+                const mimeMap = { mp4: 'video/mp4', mov: 'video/quicktime', webm: 'video/webm', m4v: 'video/mp4', mkv: 'video/x-matroska', avi: 'video/x-msvideo' };
+                const mimeType = mimeMap[ext] || 'video/mp4';
+                lightboxMediaContainer.innerHTML = `<video controls autoplay playsinline><source src="${project.media_url}" type="${mimeType}">Your browser does not support this video format. <a href="${project.media_url}" target="_blank" style="color:#3b82f6;">Download</a></video>`;
             } else {
                 lightboxMediaContainer.innerHTML = `<img src="${project.media_url}" alt="${project.title}">`;
             }
