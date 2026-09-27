@@ -1,196 +1,223 @@
+// ============================================================
+// VIDEO DIAGNOSTIC
+// ============================================================
+
 window.diagnoseVideoError = async function (videoElement, url, mimeType) {
+
     console.group(`Video Diagnostic: ${url}`);
 
     const canPlay = videoElement.canPlayType(mimeType);
 
     console.log(
-        `1. Browser canPlayType('${mimeType}'):`,
-        canPlay ? `Yes ('${canPlay}')` : 'No'
+        `Browser canPlayType('${mimeType}'):`,
+        canPlay || 'No'
     );
 
     try {
-        const response = await fetch(url, { method: 'HEAD' });
+
+        const response = await fetch(url, {
+            method: 'HEAD'
+        });
 
         console.log(
-            `2. Supabase Response Content-Type:`,
+            'Supabase Content-Type:',
             response.headers.get('content-type')
         );
+
     } catch (e) {
+
         console.log(
-            `2. Could not fetch HEAD request (CORS or network error):`,
+            'Could not check video:',
             e.message
         );
     }
 
-    console.log(`3. Video URL being used:`, url);
-
     if (videoElement.error) {
+
         const errorCodes = {
             1: 'MEDIA_ERR_ABORTED',
             2: 'MEDIA_ERR_NETWORK',
-            3: 'MEDIA_ERR_DECODE (Codec not supported/corrupted)',
+            3: 'MEDIA_ERR_DECODE',
             4: 'MEDIA_ERR_SRC_NOT_SUPPORTED'
         };
 
         console.error(
-            `4. HTML5 Video Error Code:`,
-            videoElement.error.code,
-            '-',
+            'Video Error:',
             errorCodes[videoElement.error.code] || 'UNKNOWN'
-        );
-    } else {
-        console.log(
-            `4. No explicit videoElement.error property set.`
         );
     }
 
     console.groupEnd();
-
-    const parent = videoElement.parentElement;
-
-    if (parent) {
-        parent.innerHTML = `
-            <div style="
-                width:100%;
-                height:100%;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                background:rgba(255,255,255,0.05);
-                color:var(--text-secondary);
-                flex-direction:column;
-                padding:1rem;
-                text-align:center;
-            ">
-                <span>Video format/codec not supported in this browser.</span>
-
-                <a
-                    href="${url}"
-                    target="_blank"
-                    style="
-                        color:#3b82f6;
-                        margin-top:0.5rem;
-                        text-decoration:none;
-                    "
-                >
-                    Download Video
-                </a>
-            </div>
-        `;
-    }
 };
 
 
+// ============================================================
+// MAIN APP
+// ============================================================
+
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --------------------------------------------------
-    // Elements
-    // --------------------------------------------------
+    // ========================================================
+    // ELEMENTS
+    // ========================================================
 
-    const mainView = document.getElementById('main-view');
-    const galleryView = document.getElementById('gallery-view');
-    const categoryBtns = document.querySelectorAll('.category-btn');
-    const backBtn = document.getElementById('back-btn');
-    const galleryTitle = document.getElementById('gallery-title');
-    const galleryGrid = document.getElementById('gallery-grid');
-    const galleryEmpty = document.getElementById('gallery-empty');
+    const mainView =
+        document.getElementById('main-view');
 
-    // Lightbox Elements
+    const galleryView =
+        document.getElementById('gallery-view');
 
-    const lightbox = document.getElementById('lightbox');
-    const lightboxCloseBtn = document.getElementById('lightbox-close');
-    const lightboxMediaContainer = document.getElementById('lightbox-media-container');
-    const lightboxTitle = document.getElementById('lightbox-title');
-    const lightboxDesc = document.getElementById('lightbox-desc');
-    const lightboxLink = document.getElementById('lightbox-link');
+    const categoryBtns =
+        document.querySelectorAll('.category-btn');
+
+    const backBtn =
+        document.getElementById('back-btn');
+
+    const galleryTitle =
+        document.getElementById('gallery-title');
+
+    const galleryGrid =
+        document.getElementById('gallery-grid');
+
+    const galleryEmpty =
+        document.getElementById('gallery-empty');
+
+    // ========================================================
+    // LIGHTBOX
+    // ========================================================
+
+    const lightbox =
+        document.getElementById('lightbox');
+
+    const lightboxCloseBtn =
+        document.getElementById('lightbox-close');
+
+    const lightboxMediaContainer =
+        document.getElementById(
+            'lightbox-media-container'
+        );
+
+    const lightboxTitle =
+        document.getElementById('lightbox-title');
+
+    const lightboxDesc =
+        document.getElementById('lightbox-desc');
+
+    const lightboxLink =
+        document.getElementById('lightbox-link');
+
+
+    // ========================================================
+    // STATE
+    // ========================================================
 
     let allProjects = [];
+
     let isDataLoaded = false;
+
     let isLoading = false;
 
 
-    // --------------------------------------------------
-    // Year
-    // --------------------------------------------------
+    // ========================================================
+    // YEAR
+    // ========================================================
 
-    const yearElement = document.getElementById('year');
+    const yearElement =
+        document.getElementById('year');
 
     if (yearElement) {
-        yearElement.textContent = new Date().getFullYear();
+
+        yearElement.textContent =
+            new Date().getFullYear();
     }
 
 
-    // --------------------------------------------------
-    // Navigation
-    // --------------------------------------------------
+    // ========================================================
+    // NAVIGATION
+    // ========================================================
 
     categoryBtns.forEach(btn => {
 
         btn.addEventListener('click', () => {
 
-            const category = btn.getAttribute('data-category');
+            const category =
+                btn.getAttribute('data-category');
 
             openCategory(category);
-
         });
 
     });
 
 
-    backBtn.addEventListener('click', () => {
+    if (backBtn) {
 
-        galleryView.classList.remove('active');
+        backBtn.addEventListener('click', () => {
 
-        setTimeout(() => {
+            galleryView.classList.remove('active');
 
-            mainView.classList.add('active');
+            setTimeout(() => {
 
-            window.scrollTo(0, 0);
+                mainView.classList.add('active');
 
-        }, 300);
+                window.scrollTo(0, 0);
 
-    });
+            }, 300);
+
+        });
+
+    }
 
 
-    // --------------------------------------------------
-    // Supabase Data Fetching
-    // --------------------------------------------------
+    // ========================================================
+    // FETCH PROJECTS
+    // ========================================================
 
     async function fetchProjects() {
 
         if (!window.supabaseClient) {
 
             console.warn(
-                "Supabase unavailable — displaying portfolio without dynamic projects."
+                'Supabase unavailable.'
             );
 
             return [];
-
         }
 
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(
-                () => reject(new Error('Supabase request timeout')),
-                5000
-            )
-        );
+        const timeoutPromise =
+            new Promise((_, reject) => {
+
+                setTimeout(
+                    () => reject(
+                        new Error(
+                            'Supabase request timeout'
+                        )
+                    ),
+                    5000
+                );
+
+            });
 
 
         try {
 
-            const fetchPromise = window.supabaseClient
-                .from('projects')
-                .select('*')
-                .eq('published', true)
-                .order('created_at', {
-                    ascending: false
-                });
+            const fetchPromise =
+                window.supabaseClient
+                    .from('projects')
+                    .select('*')
+                    .eq('published', true)
+                    .order(
+                        'created_at',
+                        {
+                            ascending: false
+                        }
+                    );
 
 
-            const response = await Promise.race([
-                fetchPromise,
-                timeoutPromise
-            ]);
+            const response =
+                await Promise.race([
+                    fetchPromise,
+                    timeoutPromise
+                ]);
 
 
             if (response.error) {
@@ -200,23 +227,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
             return response.data || [];
 
+
         } catch (error) {
 
             console.error(
-                "Error fetching projects:",
+                'Error fetching projects:',
                 error.message
             );
 
             return [];
-
         }
-
     }
 
 
-    // --------------------------------------------------
-    // Profile Photo
-    // --------------------------------------------------
+    // ========================================================
+    // PROFILE PHOTO
+    // ========================================================
 
     async function fetchProfilePhoto() {
 
@@ -227,25 +253,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
 
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(
-                    () => reject(new Error('timeout')),
-                    3000
-                )
-            );
+            const timeoutPromise =
+                new Promise((_, reject) => {
+
+                    setTimeout(
+                        () => reject(
+                            new Error('timeout')
+                        ),
+                        3000
+                    );
+
+                });
 
 
-            const fetchPromise = window.supabaseClient
-                .from('settings')
-                .select('profile_photo_url')
-                .eq('id', 1)
-                .single();
+            const fetchPromise =
+                window.supabaseClient
+                    .from('settings')
+                    .select('profile_photo_url')
+                    .eq('id', 1)
+                    .single();
 
 
-            const response = await Promise.race([
-                fetchPromise,
-                timeoutPromise
-            ]);
+            const response =
+                await Promise.race([
+                    fetchPromise,
+                    timeoutPromise
+                ]);
 
 
             if (
@@ -254,37 +287,39 @@ document.addEventListener('DOMContentLoaded', () => {
             ) {
 
                 const profileImg =
-                    document.getElementById('profile-img');
+                    document.getElementById(
+                        'profile-img'
+                    );
 
 
                 if (profileImg) {
 
                     profileImg.src =
                         response.data.profile_photo_url;
-
                 }
-
             }
+
 
         } catch (error) {
 
             console.warn(
-                "Could not load profile photo from Supabase",
+                'Could not load profile photo:',
                 error.message
             );
-
         }
-
     }
 
 
-    // --------------------------------------------------
-    // Load Data
-    // --------------------------------------------------
+    // ========================================================
+    // LOAD ALL DATA
+    // ========================================================
 
     async function loadDataIfNeeded() {
 
-        if (isDataLoaded || isLoading) {
+        if (
+            isDataLoaded ||
+            isLoading
+        ) {
             return;
         }
 
@@ -294,18 +329,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
 
-            const [projectsData] = await Promise.all([
+            const results =
+                await Promise.all([
 
-                fetchProjects(),
+                    fetchProjects(),
 
-                fetchProfilePhoto(),
+                    fetchProfilePhoto(),
 
-                renderClients()
+                    renderClients()
 
-            ]);
+                ]);
 
 
-            allProjects = projectsData;
+            allProjects =
+                results[0] || [];
+
 
             isDataLoaded = true;
 
@@ -313,13 +351,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
 
             isLoading = false;
-
         }
-
     }
 
 
-    // Load data shortly after page load
+    // ========================================================
+    // INITIAL DATA LOAD
+    // ========================================================
 
     setTimeout(
         loadDataIfNeeded,
@@ -327,9 +365,9 @@ document.addEventListener('DOMContentLoaded', () => {
     );
 
 
-    // --------------------------------------------------
-    // Category View
-    // --------------------------------------------------
+    // ========================================================
+    // OPEN CATEGORY
+    // ========================================================
 
     async function openCategory(category) {
 
@@ -343,17 +381,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     grid-column:1/-1;
                     text-align:center;
                     color:var(--text-secondary);
+                    padding:3rem;
                 ">
                     Loading...
                 </div>
             `;
 
 
-            galleryEmpty.style.display = 'none';
+            galleryEmpty.style.display =
+                'none';
 
 
             await loadDataIfNeeded();
-
         }
 
 
@@ -366,19 +405,96 @@ document.addEventListener('DOMContentLoaded', () => {
             renderGallery(category);
 
 
-            galleryView.classList.add('active');
+            galleryView.classList.add(
+                'active'
+            );
 
 
-            window.scrollTo(0, 0);
+            window.scrollTo(
+                0,
+                0
+            );
 
         }, 300);
-
     }
 
 
-    // --------------------------------------------------
-    // Render Gallery
-    // --------------------------------------------------
+    // ========================================================
+    // GET PUBLIC MEDIA URL
+    // ========================================================
+
+    function getMediaUrl(url) {
+
+        if (!url) {
+            return '';
+        }
+
+
+        if (
+            url.startsWith('http://') ||
+            url.startsWith('https://')
+        ) {
+
+            return url;
+        }
+
+
+        if (window.supabaseClient) {
+
+            return window.supabaseClient
+                .storage
+                .from('portfolio-media')
+                .getPublicUrl(url)
+                .data
+                .publicUrl;
+        }
+
+
+        return url;
+    }
+
+
+    // ========================================================
+    // GET VIDEO MIME TYPE
+    // ========================================================
+
+    function getVideoMime(url) {
+
+        const ext =
+            url
+                .split('.')
+                .pop()
+                .split('?')[0]
+                .toLowerCase();
+
+
+        const mimeMap = {
+
+            mp4: 'video/mp4',
+
+            mov: 'video/quicktime',
+
+            webm: 'video/webm',
+
+            m4v: 'video/mp4',
+
+            mkv: 'video/mp4',
+
+            avi: 'video/mp4'
+
+        };
+
+
+        return (
+            mimeMap[ext] ||
+            'video/mp4'
+        );
+    }
+
+
+    // ========================================================
+    // RENDER GALLERY
+    // ========================================================
 
     function renderGallery(category) {
 
@@ -387,206 +503,369 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const filteredProjects =
             allProjects.filter(
-                p => p.category === category
+                project =>
+                    project.category === category
             );
 
 
-        if (filteredProjects.length === 0) {
+        if (
+            filteredProjects.length === 0
+        ) {
 
-            galleryEmpty.style.display = 'block';
+            galleryEmpty.style.display =
+                'block';
 
             return;
-
         }
 
 
-        galleryEmpty.style.display = 'none';
+        galleryEmpty.style.display =
+            'none';
 
 
-        filteredProjects.forEach((project, index) => {
+        filteredProjects.forEach(
+            (project, index) => {
 
-            const card =
-                document.createElement('div');
-
-
-            card.className =
-                'project-card';
-
-
-            if (
-                index % 4 === 0 &&
-                project.type === 'video'
-            ) {
-
-                card.classList.add('wide');
-
-            }
+                const card =
+                    document.createElement(
+                        'div'
+                    );
 
 
-            let mediaElement = '';
+                card.className =
+                    'project-card';
 
-
-            if (project.media_url) {
-
-                let finalMediaUrl =
-                    project.media_url;
-
-
-                // Convert relative Supabase path
-                // to public URL
 
                 if (
-                    !finalMediaUrl.startsWith('http://') &&
-                    !finalMediaUrl.startsWith('https://') &&
-                    window.supabaseClient
+                    index % 4 === 0 &&
+                    project.type === 'video'
                 ) {
 
-                    finalMediaUrl =
-                        window.supabaseClient
-                            .storage
-                            .from('portfolio-media')
-                            .getPublicUrl(
-                                finalMediaUrl
-                            )
-                            .data
-                            .publicUrl;
-
+                    card.classList.add(
+                        'wide'
+                    );
                 }
 
 
-                // --------------------------------------------------
-                // VIDEO
-                // --------------------------------------------------
-
-                if (project.type === 'video') {
-
-                    const ext =
-                        finalMediaUrl
-                            .split('.')
-                            .pop()
-                            .split('?')[0]
-                            .toLowerCase();
+                let mediaElement = '';
 
 
-                    const mimeMap = {
+                if (project.media_url) {
 
-                        mp4: 'video/mp4',
-
-                        mov: 'video/quicktime',
-
-                        webm: 'video/webm',
-
-                        m4v: 'video/mp4'
-
-                    };
+                    const finalMediaUrl =
+                        getMediaUrl(
+                            project.media_url
+                        );
 
 
-                    const mimeType =
-                        mimeMap[ext] ||
-                        'video/mp4';
+                    // =================================================
+                    // VIDEO
+                    // =================================================
+
+                    if (
+                        project.type === 'video'
+                    ) {
+
+                        const mimeType =
+                            getVideoMime(
+                                finalMediaUrl
+                            );
 
 
-                    // IMPORTANT:
-                    // Use <source> instead of direct src
-                    // and preload metadata.
+                        mediaElement = `
 
-                    mediaElement = `
-                        <video
-                            muted
-                            loop
-                            playsinline
-                            preload="metadata"
-                            onmouseover="
-                                var p=this.play();
-                                if(p!==undefined)
-                                    p.catch(function(){});
-                            "
-                            onmouseout="this.pause()"
-                            onerror="
-                                window.diagnoseVideoError &&
-                                window.diagnoseVideoError(
-                                    this,
-                                    '${finalMediaUrl}',
-                                    '${mimeType}'
-                                )
-                            "
-                        >
-                            <source
-                                src="${finalMediaUrl}"
-                                type="${mimeType}"
+                            <video
+                                class="gallery-video"
+                                muted
+                                autoplay
+                                loop
+                                playsinline
+                                webkit-playsinline
+                                preload="auto"
+                                disablepictureinpicture
+                                data-video-url="${finalMediaUrl}"
+                                data-video-mime="${mimeType}"
+                                aria-label="${project.title || 'Project video'}"
                             >
-                        </video>
-                    `;
+
+                                <source
+                                    src="${finalMediaUrl}"
+                                    type="${mimeType}"
+                                >
+
+                            </video>
+
+                        `;
+
+                    }
+
+                    // =================================================
+                    // IMAGE
+                    // =================================================
+
+                    else {
+
+                        mediaElement = `
+
+                            <img
+                                src="${finalMediaUrl}"
+                                alt="${project.title || 'Project'}"
+                                loading="lazy"
+                            >
+
+                        `;
+                    }
 
 
                 } else {
 
-                    // --------------------------------------------------
-                    // IMAGE
-                    // --------------------------------------------------
-
                     mediaElement = `
-                        <img
-                            src="${finalMediaUrl}"
-                            alt="${project.title || 'Project'}"
-                            loading="lazy"
-                        >
-                    `;
 
+                        <div style="
+                            width:100%;
+                            height:100%;
+                            display:flex;
+                            align-items:center;
+                            justify-content:center;
+                            opacity:0.1;
+                        ">
+
+                            <i
+                                class="fa-solid fa-image fa-3x"
+                            ></i>
+
+                        </div>
+
+                    `;
                 }
 
 
-            } else {
+                card.innerHTML = `
 
-                mediaElement = `
-                    <div style="
-                        width:100%;
-                        height:100%;
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        opacity:0.1;
-                    ">
-                        <i class="fa-solid fa-image fa-3x"></i>
+                    ${mediaElement}
+
+                    <div class="project-overlay">
+
+                        <h3 class="project-card-title">
+                            ${project.title || 'Untitled'}
+                        </h3>
+
+                        <span class="project-card-type">
+                            ${project.type || ''}
+                        </span>
+
                     </div>
+
                 `;
 
+
+                card.addEventListener(
+                    'click',
+                    () => {
+
+                        openLightbox(
+                            project
+                        );
+
+                    }
+                );
+
+
+                galleryGrid.appendChild(
+                    card
+                );
+
             }
+        );
 
 
-            card.innerHTML = `
-                ${mediaElement}
+        // ========================================================
+        // IMPORTANT:
+        // START VIDEO PREVIEWS ON MOBILE + DESKTOP
+        // ========================================================
 
-                <div class="project-overlay">
-
-                    <h3 class="project-card-title">
-                        ${project.title || 'Untitled'}
-                    </h3>
-
-                    <span class="project-card-type">
-                        ${project.type}
-                    </span>
-
-                </div>
-            `;
-
-
-            card.addEventListener(
-                'click',
-                () => openLightbox(project)
-            );
-
-
-            galleryGrid.appendChild(card);
-
-        });
-
+        setupGalleryVideoPreviews();
     }
 
 
-    // --------------------------------------------------
-    // Clients
-    // --------------------------------------------------
+    // ========================================================
+    // MOBILE / DESKTOP VIDEO PREVIEWS
+    // ========================================================
+
+    function setupGalleryVideoPreviews() {
+
+        const videos =
+            galleryGrid.querySelectorAll(
+                'video.gallery-video'
+            );
+
+
+        if (!videos.length) {
+            return;
+        }
+
+
+        // ======================================================
+        // FIRST ATTEMPT
+        // ======================================================
+
+        videos.forEach(video => {
+
+            video.muted = true;
+
+            video.defaultMuted = true;
+
+            video.playsInline = true;
+
+
+            const playPromise =
+                video.play();
+
+
+            if (
+                playPromise !== undefined
+            ) {
+
+                playPromise.catch(() => {
+                    // Browser may wait until video becomes visible.
+                });
+            }
+
+
+            // If the video cannot load,
+            // show a diagnostic in console.
+
+            video.addEventListener(
+                'error',
+                () => {
+
+                    console.warn(
+                        'Gallery video failed:',
+                        video.dataset.videoUrl
+                    );
+
+                },
+                {
+                    once: true
+                }
+            );
+
+        });
+
+
+        // ======================================================
+        // INTERSECTION OBSERVER
+        // ======================================================
+
+        if (
+            'IntersectionObserver'
+            in window
+        ) {
+
+            const observer =
+                new IntersectionObserver(
+                    entries => {
+
+                        entries.forEach(
+                            entry => {
+
+                                const video =
+                                    entry.target;
+
+
+                                if (
+                                    entry.isIntersecting &&
+                                    entry.intersectionRatio >= 0.15
+                                ) {
+
+                                    video.muted =
+                                        true;
+
+
+                                    video.defaultMuted =
+                                        true;
+
+
+                                    const playPromise =
+                                        video.play();
+
+
+                                    if (
+                                        playPromise !==
+                                        undefined
+                                    ) {
+
+                                        playPromise.catch(
+                                            () => { }
+                                        );
+                                    }
+
+
+                                } else {
+
+                                    video.pause();
+
+                                }
+
+                            }
+                        );
+
+                    },
+                    {
+                        threshold: [
+                            0,
+                            0.15,
+                            0.5
+                        ],
+
+                        rootMargin:
+                            '150px 0px 150px 0px'
+                    }
+                );
+
+
+            videos.forEach(video => {
+
+                observer.observe(
+                    video
+                );
+
+            });
+
+
+        } else {
+
+            // ==================================================
+            // FALLBACK FOR OLDER BROWSERS
+            // ==================================================
+
+            videos.forEach(video => {
+
+                video.muted =
+                    true;
+
+                const playPromise =
+                    video.play();
+
+
+                if (
+                    playPromise !==
+                    undefined
+                ) {
+
+                    playPromise.catch(
+                        () => { }
+                    );
+                }
+
+            });
+        }
+    }
+
+
+    // ========================================================
+    // CLIENTS
+    // ========================================================
 
     async function renderClients() {
 
@@ -607,23 +886,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
-        mainClientsGrid.innerHTML = '';
+        mainClientsGrid.innerHTML =
+            '';
 
 
         if (!window.supabaseClient) {
 
-            mainClientsEmpty.style.display =
-                'block';
+            if (mainClientsEmpty) {
+
+                mainClientsEmpty.style.display =
+                    'block';
+            }
 
             return;
-
         }
 
 
         try {
 
             const timeoutPromise =
-                new Promise((_, reject) =>
+                new Promise((_, reject) => {
+
                     setTimeout(
                         () => reject(
                             new Error(
@@ -631,8 +914,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             )
                         ),
                         5000
-                    )
-                );
+                    );
+
+                });
 
 
             const fetchPromise =
@@ -640,9 +924,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     .from('clients')
                     .select('*')
                     .eq('published', true)
-                    .order('created_at', {
-                        ascending: false
-                    });
+                    .order(
+                        'created_at',
+                        {
+                            ascending: false
+                        }
+                    );
 
 
             const response =
@@ -658,227 +945,244 @@ document.addEventListener('DOMContentLoaded', () => {
                 response.data.length === 0
             ) {
 
-                mainClientsEmpty.style.display =
-                    'block';
+                if (mainClientsEmpty) {
+
+                    mainClientsEmpty.style.display =
+                        'block';
+                }
 
                 return;
-
             }
 
 
-            mainClientsEmpty.style.display =
-                'none';
+            if (mainClientsEmpty) {
+
+                mainClientsEmpty.style.display =
+                    'none';
+            }
 
 
-            response.data.forEach(client => {
+            response.data.forEach(
+                client => {
 
-                const wrapper =
-                    document.createElement('div');
-
-
-                wrapper.className =
-                    'client-card-wrapper';
-
-
-                wrapper.style.display =
-                    'flex';
-
-                wrapper.style.flexDirection =
-                    'column';
-
-                wrapper.style.alignItems =
-                    'center';
-
-                wrapper.style.gap =
-                    '0.75rem';
+                    const wrapper =
+                        document.createElement(
+                            'div'
+                        );
 
 
-                const card =
-                    document.createElement('div');
+                    wrapper.className =
+                        'client-card-wrapper';
 
 
-                card.className =
-                    'client-logo-card';
+                    wrapper.style.display =
+                        'flex';
+
+                    wrapper.style.flexDirection =
+                        'column';
+
+                    wrapper.style.alignItems =
+                        'center';
+
+                    wrapper.style.gap =
+                        '0.75rem';
 
 
-                card.style.display =
-                    'flex';
-
-                card.style.alignItems =
-                    'center';
-
-                card.style.justifyContent =
-                    'center';
-
-                card.style.width =
-                    '100%';
-
-                card.style.aspectRatio =
-                    '4/5';
-
-                card.style.border =
-                    '1px solid rgba(255,255,255,0.05)';
-
-                card.style.background =
-                    'rgba(0,0,0,0.2)';
-
-                card.style.transition =
-                    'all 0.3s ease';
-
-                card.style.overflow =
-                    'hidden';
+                    const card =
+                        document.createElement(
+                            'div'
+                        );
 
 
-                let logoHtml = client.logo_url
-
-                    ? `
-                        <img
-                            src="${client.logo_url}"
-                            alt="${client.name}"
-                            style="
-                                width:100%;
-                                height:100%;
-                                object-fit:cover;
-                                filter:grayscale(100%) opacity(0.8);
-                                transition:all 0.5s ease;
-                            "
-                            onmouseover="
-                                this.style.filter='grayscale(0%) opacity(1)';
-                                this.style.transform='scale(1.05)';
-                            "
-                            onmouseout="
-                                this.style.filter='grayscale(100%) opacity(0.8)';
-                                this.style.transform='scale(1)';
-                            "
-                        >
-                    `
-
-                    : `
-                        <h3 style="
-                            font-family:var(--font-display);
-                            color:rgba(255,255,255,0.7);
-                            font-size:1.5rem;
-                            text-transform:uppercase;
-                        ">
-                            ${client.name}
-                        </h3>
-                    `;
+                    card.className =
+                        'client-logo-card';
 
 
-                card.innerHTML =
-                    logoHtml;
+                    card.style.display =
+                        'flex';
+
+                    card.style.alignItems =
+                        'center';
+
+                    card.style.justifyContent =
+                        'center';
+
+                    card.style.width =
+                        '100%';
+
+                    card.style.aspectRatio =
+                        '4/5';
+
+                    card.style.border =
+                        '1px solid rgba(255,255,255,0.05)';
+
+                    card.style.background =
+                        'rgba(0,0,0,0.2)';
+
+                    card.style.transition =
+                        'all 0.3s ease';
+
+                    card.style.overflow =
+                        'hidden';
 
 
-                const nameLabel =
-                    document.createElement('p');
+                    let logoHtml;
 
 
-                nameLabel.textContent =
-                    client.name || '';
+                    if (client.logo_url) {
+
+                        logoHtml = `
+
+                            <img
+                                src="${client.logo_url}"
+                                alt="${client.name || ''}"
+                                style="
+                                    width:100%;
+                                    height:100%;
+                                    object-fit:cover;
+                                    filter:grayscale(100%) opacity(0.8);
+                                    transition:all 0.5s ease;
+                                "
+                            >
+
+                        `;
+
+                    } else {
+
+                        logoHtml = `
+
+                            <h3 style="
+                                font-family:var(--font-display);
+                                color:rgba(255,255,255,0.7);
+                                font-size:1.5rem;
+                                text-transform:uppercase;
+                            ">
+
+                                ${client.name || ''}
+
+                            </h3>
+
+                        `;
+                    }
 
 
-                nameLabel.style.fontFamily =
-                    'var(--font-display)';
+                    card.innerHTML =
+                        logoHtml;
 
 
-                nameLabel.style.fontSize =
-                    '0.85rem';
+                    const nameLabel =
+                        document.createElement(
+                            'p'
+                        );
 
 
-                nameLabel.style.fontWeight =
-                    '500';
+                    nameLabel.textContent =
+                        client.name || '';
 
 
-                nameLabel.style.letterSpacing =
-                    '0.12em';
+                    nameLabel.style.fontFamily =
+                        'var(--font-display)';
+
+                    nameLabel.style.fontSize =
+                        '0.85rem';
+
+                    nameLabel.style.fontWeight =
+                        '500';
+
+                    nameLabel.style.letterSpacing =
+                        '0.12em';
+
+                    nameLabel.style.textTransform =
+                        'uppercase';
+
+                    nameLabel.style.color =
+                        'rgba(255,255,255,0.75)';
+
+                    nameLabel.style.textAlign =
+                        'center';
 
 
-                nameLabel.style.textTransform =
-                    'uppercase';
+                    wrapper.appendChild(
+                        card
+                    );
 
-
-                nameLabel.style.color =
-                    'rgba(255,255,255,0.75)';
-
-
-                nameLabel.style.textAlign =
-                    'center';
-
-
-                wrapper.appendChild(card);
-
-                wrapper.appendChild(nameLabel);
-
-
-                if (client.website_link) {
-
-                    wrapper.style.cursor =
-                        'pointer';
-
-
-                    wrapper.addEventListener(
-                        'click',
-                        () => {
-
-                            window.open(
-                                client.website_link,
-                                '_blank'
-                            );
-
-                        }
+                    wrapper.appendChild(
+                        nameLabel
                     );
 
 
-                    card.addEventListener(
-                        'mouseover',
-                        () => {
+                    if (
+                        client.website_link
+                    ) {
 
-                            card.style.background =
-                                'rgba(255,255,255,0.05)';
-
-                        }
-                    );
+                        wrapper.style.cursor =
+                            'pointer';
 
 
-                    card.addEventListener(
-                        'mouseout',
-                        () => {
+                        wrapper.addEventListener(
+                            'click',
+                            () => {
 
-                            card.style.background =
-                                'rgba(0,0,0,0.2)';
+                                window.open(
+                                    client.website_link,
+                                    '_blank'
+                                );
 
-                        }
+                            }
+                        );
+
+
+                        card.addEventListener(
+                            'mouseenter',
+                            () => {
+
+                                card.style.background =
+                                    'rgba(255,255,255,0.05)';
+
+                            }
+                        );
+
+
+                        card.addEventListener(
+                            'mouseleave',
+                            () => {
+
+                                card.style.background =
+                                    'rgba(0,0,0,0.2)';
+
+                            }
+                        );
+                    }
+
+
+                    mainClientsGrid.appendChild(
+                        wrapper
                     );
 
                 }
-
-
-                mainClientsGrid.appendChild(
-                    wrapper
-                );
-
-            });
+            );
 
 
         } catch (error) {
 
             console.error(
-                "Error fetching clients:",
+                'Error fetching clients:',
                 error.message
             );
 
 
-            mainClientsEmpty.style.display =
-                'block';
+            if (mainClientsEmpty) {
 
+                mainClientsEmpty.style.display =
+                    'block';
+            }
         }
-
     }
 
 
-    // --------------------------------------------------
-    // Lightbox
-    // --------------------------------------------------
+    // ========================================================
+    // LIGHTBOX
+    // ========================================================
 
     function openLightbox(project) {
 
@@ -888,131 +1192,157 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (project.media_url) {
 
-            let finalMediaUrl =
-                project.media_url;
+            const finalMediaUrl =
+                getMediaUrl(
+                    project.media_url
+                );
 
+
+            // ==================================================
+            // VIDEO LIGHTBOX
+            // ==================================================
 
             if (
-                !finalMediaUrl.startsWith('http://') &&
-                !finalMediaUrl.startsWith('https://') &&
-                window.supabaseClient
+                project.type === 'video'
             ) {
 
-                finalMediaUrl =
-                    window.supabaseClient
-                        .storage
-                        .from('portfolio-media')
-                        .getPublicUrl(
-                            finalMediaUrl
-                        )
-                        .data
-                        .publicUrl;
+                const mimeType =
+                    getVideoMime(
+                        finalMediaUrl
+                    );
+
+
+                const video =
+                    document.createElement(
+                        'video'
+                    );
+
+
+                video.controls =
+                    true;
+
+                video.autoplay =
+                    true;
+
+                video.playsInline =
+                    true;
+
+                video.preload =
+                    'metadata';
+
+                video.style.maxWidth =
+                    '100%';
+
+                video.style.maxHeight =
+                    '80vh';
+
+
+                const source =
+                    document.createElement(
+                        'source'
+                    );
+
+
+                source.src =
+                    finalMediaUrl;
+
+                source.type =
+                    mimeType;
+
+
+                video.appendChild(
+                    source
+                );
+
+
+                video.addEventListener(
+                    'error',
+                    () => {
+
+                        window.diagnoseVideoError(
+                            video,
+                            finalMediaUrl,
+                            mimeType
+                        );
+
+                    }
+                );
+
+
+                lightboxMediaContainer.appendChild(
+                    video
+                );
+
 
             }
 
+            // ==================================================
+            // IMAGE LIGHTBOX
+            // ==================================================
 
-            // --------------------------------------------------
-            // VIDEO LIGHTBOX
-            // --------------------------------------------------
+            else {
 
-            if (project.type === 'video') {
-
-                const ext =
-                    finalMediaUrl
-                        .split('.')
-                        .pop()
-                        .split('?')[0]
-                        .toLowerCase();
+                const img =
+                    document.createElement(
+                        'img'
+                    );
 
 
-                const mimeMap = {
+                img.src =
+                    finalMediaUrl;
 
-                    mp4: 'video/mp4',
-
-                    mov: 'video/quicktime',
-
-                    webm: 'video/webm',
-
-                    m4v: 'video/mp4'
-
-                };
+                img.alt =
+                    project.title ||
+                    'Project';
 
 
-                const mimeType =
-                    mimeMap[ext] ||
-                    'video/mp4';
-
-
-                lightboxMediaContainer.innerHTML = `
-                    <video
-                        controls
-                        autoplay
-                        playsinline
-                        preload="metadata"
-                        onerror="
-                            window.diagnoseVideoError &&
-                            window.diagnoseVideoError(
-                                this,
-                                '${finalMediaUrl}',
-                                '${mimeType}'
-                            )
-                        "
-                    >
-                        <source
-                            src="${finalMediaUrl}"
-                            type="${mimeType}"
-                        >
-                    </video>
-                `;
-
-
-            } else {
-
-                // --------------------------------------------------
-                // IMAGE LIGHTBOX
-                // --------------------------------------------------
-
-                lightboxMediaContainer.innerHTML = `
-                    <img
-                        src="${finalMediaUrl}"
-                        alt="${project.title || 'Project'}"
-                    >
-                `;
-
+                lightboxMediaContainer.appendChild(
+                    img
+                );
             }
 
 
         } else {
 
             lightboxMediaContainer.innerHTML = `
+
                 <div style="
                     padding:4rem;
                     text-align:center;
                     color:var(--text-secondary);
                 ">
+
                     <i
                         class="fa-solid fa-image fa-4x"
                         style="opacity:0.2;"
                     ></i>
-                </div>
-            `;
 
+                </div>
+
+            `;
         }
 
 
+        // ======================================================
+        // LIGHTBOX TEXT
+        // ======================================================
+
         lightboxTitle.textContent =
-            project.title || 'Untitled';
+            project.title ||
+            'Untitled';
 
 
         lightboxDesc.textContent =
-            project.description || '';
+            project.description ||
+            '';
 
 
-        if (project.project_link) {
+        if (
+            project.project_link
+        ) {
 
             lightboxLink.href =
                 project.project_link;
-
 
             lightboxLink.style.display =
                 'inline-block';
@@ -1021,22 +1351,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
             lightboxLink.style.display =
                 'none';
-
         }
 
 
-        lightbox.classList.add('active');
+        // ======================================================
+        // SHOW LIGHTBOX
+        // ======================================================
+
+        lightbox.classList.add(
+            'active'
+        );
 
 
         document.body.style.overflow =
             'hidden';
-
     }
 
 
-    // --------------------------------------------------
-    // Close Lightbox
-    // --------------------------------------------------
+    // ========================================================
+    // CLOSE LIGHTBOX
+    // ========================================================
 
     function closeLightbox() {
 
@@ -1055,52 +1389,63 @@ document.addEventListener('DOMContentLoaded', () => {
                 '';
 
         }, 300);
-
     }
 
 
-    lightboxCloseBtn.addEventListener(
-        'click',
-        closeLightbox
-    );
+    // ========================================================
+    // CLOSE BUTTON
+    // ========================================================
+
+    if (lightboxCloseBtn) {
+
+        lightboxCloseBtn.addEventListener(
+            'click',
+            closeLightbox
+        );
+    }
 
 
-    // Close by clicking outside
+    // ========================================================
+    // CLICK OUTSIDE LIGHTBOX
+    // ========================================================
 
-    lightbox.addEventListener(
-        'click',
-        (e) => {
+    if (lightbox) {
+
+        lightbox.addEventListener(
+            'click',
+            e => {
+
+                if (
+                    e.target === lightbox ||
+                    e.target.classList.contains(
+                        'lightbox-content-wrapper'
+                    )
+                ) {
+
+                    closeLightbox();
+                }
+            }
+        );
+    }
+
+
+    // ========================================================
+    // ESC KEY
+    // ========================================================
+
+    document.addEventListener(
+        'keydown',
+        e => {
 
             if (
-                e.target === lightbox ||
-                e.target.classList.contains(
-                    'lightbox-content-wrapper'
+                e.key === 'Escape' &&
+                lightbox.classList.contains(
+                    'active'
                 )
             ) {
 
                 closeLightbox();
-
             }
-
-        }
-    );
-
-
-    // Close with ESC
-
-    document.addEventListener(
-        'keydown',
-        (e) => {
-
-            if (
-                e.key === 'Escape' &&
-                lightbox.classList.contains('active')
-            ) {
-
-                closeLightbox();
-
-            }
-
         }
     );
 
