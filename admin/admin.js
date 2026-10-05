@@ -130,10 +130,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const tr = document.createElement('tr');
             
             let mediaHtml = '';
+            
+            let finalMediaUrl = p.media_url;
+            if (finalMediaUrl && !finalMediaUrl.startsWith('http://') && !finalMediaUrl.startsWith('https://') && window.supabaseClient) {
+                finalMediaUrl = window.supabaseClient.storage.from('portfolio-media').getPublicUrl(finalMediaUrl).data.publicUrl;
+            }
+
             if (p.type === 'video') {
-                mediaHtml = `<video src="${p.media_url}" class="thumb" muted>Unsupported format</video>`;
+                mediaHtml = `<video src="${finalMediaUrl}" class="thumb" muted onerror="this.outerHTML='<div class=\\'thumb\\' style=\\'display:flex;align-items:center;justify-content:center;background:#222;color:#999;font-size:10px;text-align:center;padding:0.5rem;\\'>Unsupported<br>Format</div>'">Unsupported format</video>`;
             } else {
-                mediaHtml = `<img src="${p.media_url}" class="thumb">`;
+                mediaHtml = `<img src="${finalMediaUrl}" class="thumb">`;
             }
 
             const statusClass = p.published ? 'published' : 'draft';
