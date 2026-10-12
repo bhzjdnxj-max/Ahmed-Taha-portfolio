@@ -1,3 +1,12 @@
 ffmpeg/
 ffmpeg.zip
 node_modules/
+video-fix/
+Fix-All-Videos.ps1
+Video-Compatibility-System.ps1
+Convert-Mov-To-Mp4.ps1
+check_encoding.ps1
+migrate-projects.js
+.env*
+package.json
+package-lock.json

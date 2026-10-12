@@ -20,7 +20,7 @@ window.diagnoseVideoError = async function (videoElement, url, mimeType) {
         });
 
         console.log(
-            'Supabase Content-Type:',
+            'ImageKit Content-Type:',
             response.headers.get('content-type')
         );
 
@@ -455,10 +455,128 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ========================================================
+    // GET COMPATIBLE VIDEO URL
+    // ========================================================
+    //
+    // ImageKit free plan blocks direct video access with
+    // "Video transformations limit exceeded" (HTTP 403).
+    //
+    // Using tr:orig-true/ in the URL path tells ImageKit
+    // to serve the ORIGINAL file without any transformation,
+    // which does NOT count toward transformation limits.
+    //
+    // All videos are already in compatible codecs:
+    //   - H.264 / AAC / MP4
+    //   - HEVC  / AAC / MP4 (works on Chrome, Safari, Edge)
+    // ========================================================
+
+    function getCompatibleVideoUrl(url) {
+
+        if (!url) {
+            return '';
+        }
+
+
+        try {
+
+            const parsedUrl =
+                new URL(url);
+
+
+            if (
+                parsedUrl.hostname.includes(
+                    'ik.imagekit.io'
+                )
+            ) {
+
+                // Remove any existing transformation
+                // query params to avoid 403 errors.
+
+                parsedUrl.searchParams.delete(
+                    'tr'
+                );
+
+
+                // Insert tr:orig-true/ after the
+                // ImageKit ID in the URL path.
+                //
+                // Before: /o5o3ly3x4/projects/file.mp4
+                // After:  /o5o3ly3x4/tr:orig-true/projects/file.mp4
+
+                const pathParts =
+                    parsedUrl.pathname.split('/');
+
+
+                if (
+                    pathParts.length >= 2 &&
+                    !pathParts.includes(
+                        'tr:orig-true'
+                    )
+                ) {
+
+                    pathParts.splice(
+                        2,
+                        0,
+                        'tr:orig-true'
+                    );
+
+                    parsedUrl.pathname =
+                        pathParts.join('/');
+                }
+
+
+                return parsedUrl.toString();
+            }
+
+
+        } catch (error) {
+
+            console.warn(
+                'Could not process video URL:',
+                error
+            );
+        }
+
+
+        return url;
+    }
+
+
+    // ========================================================
     // GET VIDEO MIME TYPE
     // ========================================================
 
     function getVideoMime(url) {
+
+        if (!url) {
+            return 'video/mp4';
+        }
+
+
+        try {
+
+            const parsedUrl =
+                new URL(url);
+
+
+            // All ImageKit transformed videos
+            // are returned as MP4.
+
+            if (
+                parsedUrl.hostname.includes(
+                    'ik.imagekit.io'
+                )
+            ) {
+
+                return 'video/mp4';
+            }
+
+
+        } catch (error) {
+
+            // Continue with normal extension detection.
+        }
+
 
         const ext =
             url
@@ -566,9 +684,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         project.type === 'video'
                     ) {
 
+                        // Convert ImageKit video
+                        // to MP4 / H.264 / AAC.
+
+                        const videoUrl =
+                            getCompatibleVideoUrl(
+                                finalMediaUrl
+                            );
+
+
                         const mimeType =
                             getVideoMime(
-                                finalMediaUrl
+                                videoUrl
                             );
 
 
@@ -583,13 +710,13 @@ document.addEventListener('DOMContentLoaded', () => {
                                 webkit-playsinline
                                 preload="auto"
                                 disablepictureinpicture
-                                data-video-url="${finalMediaUrl}"
+                                data-video-url="${videoUrl}"
                                 data-video-mime="${mimeType}"
                                 aria-label="${project.title || 'Project video'}"
                             >
 
                                 <source
-                                    src="${finalMediaUrl}"
+                                    src="${videoUrl}"
                                     type="${mimeType}"
                                 >
 
@@ -997,7 +1124,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     card.className =
                         'client-logo-card';
 
-
                     card.style.display =
                         'flex';
 
@@ -1025,172 +1151,193 @@ document.addEventListener('DOMContentLoaded', () => {
                     card.style.overflow =
                         'hidden';
 
+                    card.style.borderRadius =
+                        '12px';
 
-                    let logoHtml;
+                    card.style.position =
+                        'relative';
+
+                    card.style.cursor =
+                        'pointer';
 
 
-                    if (client.logo_url) {
+                    const logo =
+                        document.createElement(
+                            'img'
+                        );
 
-                        logoHtml = `
+                    logo.src =
+                        client.logo_url;
 
-                            <img
-                                src="${client.logo_url}"
-                                alt="${client.name || ''}"
-                                style="
-                                    width:100%;
-                                    height:100%;
-                                    object-fit:cover;
-                                    filter:grayscale(100%) opacity(0.8);
-                                    transition:all 0.5s ease;
-                                "
-                            >
+                    logo.alt =
+                        client.name ||
+                        'Client logo';
 
-                        `;
+                    logo.style.width =
+                        '80%';
 
-                    } else {
+                    logo.style.height =
+                        '80%';
 
-                        logoHtml = `
+                    logo.style.objectFit =
+                        'contain';
 
-                            <h3 style="
-                                font-family:var(--font-display);
-                                color:rgba(255,255,255,0.7);
-                                font-size:1.5rem;
-                                text-transform:uppercase;
-                            ">
+                    logo.style.transition =
+                        'transform 0.3s ease';
 
-                                ${client.name || ''}
 
-                            </h3>
+                    card.appendChild(
+                        logo
+                    );
 
-                        `;
+
+                    const name =
+                        document.createElement(
+                            'div'
+                        );
+
+                    name.textContent =
+                        client.name ||
+                        '';
+
+                    name.style.position =
+                        'absolute';
+
+                    name.style.bottom =
+                        '10px';
+
+                    name.style.left =
+                        '10px';
+
+                    name.style.right =
+                        '10px';
+
+                    name.style.textAlign =
+                        'center';
+
+                    name.style.color =
+                        '#fff';
+
+                    name.style.fontSize =
+                        '14px';
+
+                    name.style.fontWeight =
+                        '600';
+
+
+                    card.appendChild(
+                        name
+                    );
+
+
+                    if (
+                        client.website_url
+                    ) {
+
+                        const link =
+                            document.createElement(
+                                'a'
+                            );
+
+                        link.href =
+                            client.website_url;
+
+                        link.target =
+                            '_blank';
+
+                        link.rel =
+                            'noopener noreferrer';
+
+                        link.style.position =
+                            'absolute';
+
+                        link.style.inset =
+                            '0';
+
+                        link.style.zIndex =
+                            '2';
+
+                        link.setAttribute(
+                            'aria-label',
+                            client.name ||
+                            'Client website'
+                        );
+
+                        card.appendChild(
+                            link
+                        );
+
                     }
 
 
-                    card.innerHTML =
-                        logoHtml;
+                    card.addEventListener(
+                        'mouseenter',
+                        () => {
+
+                            logo.style.transform =
+                                'scale(1.05)';
+
+                            card.style.transform =
+                                'translateY(-4px)';
+
+                        }
+                    );
 
 
-                    const nameLabel =
-                        document.createElement(
-                            'p'
-                        );
+                    card.addEventListener(
+                        'mouseleave',
+                        () => {
 
+                            logo.style.transform =
+                                'scale(1)';
 
-                    nameLabel.textContent =
-                        client.name || '';
+                            card.style.transform =
+                                'translateY(0)';
 
-
-                    nameLabel.style.fontFamily =
-                        'var(--font-display)';
-
-                    nameLabel.style.fontSize =
-                        '0.85rem';
-
-                    nameLabel.style.fontWeight =
-                        '500';
-
-                    nameLabel.style.letterSpacing =
-                        '0.12em';
-
-                    nameLabel.style.textTransform =
-                        'uppercase';
-
-                    nameLabel.style.color =
-                        'rgba(255,255,255,0.75)';
-
-                    nameLabel.style.textAlign =
-                        'center';
+                        }
+                    );
 
 
                     wrapper.appendChild(
                         card
                     );
 
-                    wrapper.appendChild(
-                        nameLabel
-                    );
-
-
-                    if (
-                        client.website_link
-                    ) {
-
-                        wrapper.style.cursor =
-                            'pointer';
-
-
-                        wrapper.addEventListener(
-                            'click',
-                            () => {
-
-                                window.open(
-                                    client.website_link,
-                                    '_blank'
-                                );
-
-                            }
-                        );
-
-
-                        card.addEventListener(
-                            'mouseenter',
-                            () => {
-
-                                card.style.background =
-                                    'rgba(255,255,255,0.05)';
-
-                            }
-                        );
-
-
-                        card.addEventListener(
-                            'mouseleave',
-                            () => {
-
-                                card.style.background =
-                                    'rgba(0,0,0,0.2)';
-
-                            }
-                        );
-                    }
-
-
                     mainClientsGrid.appendChild(
                         wrapper
                     );
 
-                }
-            );
+                });
 
 
-        } catch (error) {
+        } catch (
+        error
+        ) {
 
             console.error(
-                'Error fetching clients:',
-                error.message
+                'Error loading clients:',
+                error
             );
 
-
-            if (mainClientsEmpty) {
-
-                mainClientsEmpty.style.display =
-                    'block';
-            }
         }
+
     }
 
 
-    // ========================================================
+    // ==================================================
     // LIGHTBOX
-    // ========================================================
+    // ==================================================
 
-    function openLightbox(project) {
+    function openLightbox(
+        project
+    ) {
 
         lightboxMediaContainer.innerHTML =
             '';
 
 
-        if (project.media_url) {
+        if (
+            project.media_url
+        ) {
 
             const finalMediaUrl =
                 getMediaUrl(
@@ -1206,17 +1353,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 project.type === 'video'
             ) {
 
-                const mimeType =
-                    getVideoMime(
+                const videoUrl =
+                    getCompatibleVideoUrl(
                         finalMediaUrl
                     );
 
+                const mimeType =
+                    getVideoMime(
+                        videoUrl
+                    );
 
                 const video =
                     document.createElement(
                         'video'
                     );
-
 
                 video.controls =
                     true;
@@ -1236,24 +1386,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 video.style.maxHeight =
                     '80vh';
 
-
                 const source =
                     document.createElement(
                         'source'
                     );
 
-
                 source.src =
-                    finalMediaUrl;
+                    videoUrl;
 
                 source.type =
                     mimeType;
 
-
                 video.appendChild(
                     source
                 );
-
 
                 video.addEventListener(
                     'error',
@@ -1261,18 +1407,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         window.diagnoseVideoError(
                             video,
-                            finalMediaUrl,
+                            videoUrl,
                             mimeType
                         );
 
                     }
                 );
 
-
                 lightboxMediaContainer.appendChild(
                     video
                 );
-
 
             }
 
@@ -1282,171 +1426,127 @@ document.addEventListener('DOMContentLoaded', () => {
 
             else {
 
-                const img =
+                const image =
                     document.createElement(
                         'img'
                     );
 
-
-                img.src =
+                image.src =
                     finalMediaUrl;
 
-                img.alt =
+                image.alt =
                     project.title ||
-                    'Project';
+                    'Project image';
 
+                image.style.maxWidth =
+                    '100%';
+
+                image.style.maxHeight =
+                    '80vh';
+
+                image.style.objectFit =
+                    'contain';
 
                 lightboxMediaContainer.appendChild(
-                    img
+                    image
                 );
+
             }
 
-
-        } else {
-
-            lightboxMediaContainer.innerHTML = `
-
-                <div style="
-                    padding:4rem;
-                    text-align:center;
-                    color:var(--text-secondary);
-                ">
-
-                    <i
-                        class="fa-solid fa-image fa-4x"
-                        style="opacity:0.2;"
-                    ></i>
-
-                </div>
-
-            `;
         }
-
-
-        // ======================================================
-        // LIGHTBOX TEXT
-        // ======================================================
-
-        lightboxTitle.textContent =
-            project.title ||
-            'Untitled';
-
-
-        lightboxDesc.textContent =
-            project.description ||
-            '';
 
 
         if (
-            project.project_link
+            lightbox
         ) {
 
-            lightboxLink.href =
-                project.project_link;
+            lightbox.classList.add(
+                'active'
+            );
 
-            lightboxLink.style.display =
-                'inline-block';
+            document.body.style.overflow =
+                'hidden';
 
-        } else {
-
-            lightboxLink.style.display =
-                'none';
         }
 
-
-        // ======================================================
-        // SHOW LIGHTBOX
-        // ======================================================
-
-        lightbox.classList.add(
-            'active'
-        );
-
-
-        document.body.style.overflow =
-            'hidden';
     }
 
 
-    // ========================================================
-    // CLOSE LIGHTBOX
-    // ========================================================
-
     function closeLightbox() {
 
-        lightbox.classList.remove(
-            'active'
-        );
+        if (
+            lightbox
+        ) {
 
+            lightbox.classList.remove(
+                'active'
+            );
 
-        document.body.style.overflow =
-            '';
-
-
-        setTimeout(() => {
+            document.body.style.overflow =
+                '';
 
             lightboxMediaContainer.innerHTML =
                 '';
 
-        }, 300);
+        }
+
     }
 
 
-    // ========================================================
-    // CLOSE BUTTON
-    // ========================================================
-
-    if (lightboxCloseBtn) {
+    if (
+        lightboxCloseBtn
+    ) {
 
         lightboxCloseBtn.addEventListener(
             'click',
             closeLightbox
         );
+
     }
 
 
-    // ========================================================
-    // CLICK OUTSIDE LIGHTBOX
-    // ========================================================
-
-    if (lightbox) {
+    if (
+        lightbox
+    ) {
 
         lightbox.addEventListener(
             'click',
-            e => {
+            (
+                event
+            ) => {
 
                 if (
-                    e.target === lightbox ||
-                    e.target.classList.contains(
-                        'lightbox-content-wrapper'
-                    )
+                    event.target ===
+                    lightbox
                 ) {
 
                     closeLightbox();
+
                 }
+
             }
         );
+
     }
 
 
-    // ========================================================
-    // ESC KEY
-    // ========================================================
-
     document.addEventListener(
         'keydown',
-        e => {
+        (
+            event
+        ) => {
 
             if (
-                e.key === 'Escape' &&
-                lightbox.classList.contains(
-                    'active'
-                )
+                event.key ===
+                'Escape'
             ) {
 
                 closeLightbox();
+
             }
+
         }
     );
+
 
 });
