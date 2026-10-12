@@ -712,7 +712,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 log: false,
 
                 corePath:
-                    'https://unpkg.com/@ffmpeg/core@0.11.6/dist/ffmpeg-core.js',
+                    'https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js',
 
                 progress:
                     ({
@@ -1050,17 +1050,34 @@ document.addEventListener('DOMContentLoaded', () => {
                         type === 'video'
                     ) {
 
-                        projectFormStatus.textContent =
-                            'Preparing automatic video conversion...';
+                        const isMp4 =
+                            originalExt === 'mp4' ||
+                            (originalFile.type && originalFile.type.includes('mp4'));
 
-                        // Convert ANY video to MP4
-                        fileToUpload =
-                            await convertVideoToMp4(
-                                originalFile
-                            );
+                        if (isMp4) {
 
-                        contentType =
-                            'video/mp4';
+                            projectFormStatus.textContent =
+                                'MP4 format detected. Preparing direct upload...';
+
+                            fileToUpload =
+                                originalFile;
+
+                            contentType =
+                                'video/mp4';
+
+                        } else {
+
+                            projectFormStatus.textContent =
+                                `Converting ${originalExt.toUpperCase()} to mobile-ready MP4 (H.264)...`;
+
+                            fileToUpload =
+                                await convertVideoToMp4(
+                                    originalFile
+                                );
+
+                            contentType =
+                                'video/mp4';
+                        }
                     }
 
 

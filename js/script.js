@@ -552,39 +552,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return 'video/mp4';
         }
 
-
-        try {
-
-            const parsedUrl =
-                new URL(url);
-
-
-            // All ImageKit transformed videos
-            // are returned as MP4.
-
-            if (
-                parsedUrl.hostname.includes(
-                    'ik.imagekit.io'
-                )
-            ) {
-
-                return 'video/mp4';
-            }
-
-
-        } catch (error) {
-
-            // Continue with normal extension detection.
-        }
-
-
         const ext =
             url
                 .split('.')
                 .pop()
                 .split('?')[0]
                 .toLowerCase();
-
 
         const mimeMap = {
 
@@ -601,7 +574,6 @@ document.addEventListener('DOMContentLoaded', () => {
             avi: 'video/mp4'
 
         };
-
 
         return (
             mimeMap[ext] ||
@@ -703,12 +675,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                             <video
                                 class="gallery-video"
+                                src="${videoUrl}"
                                 muted
                                 autoplay
                                 loop
                                 playsinline
                                 webkit-playsinline
-                                preload="auto"
+                                preload="metadata"
                                 disablepictureinpicture
                                 data-video-url="${videoUrl}"
                                 data-video-mime="${mimeType}"
@@ -833,7 +806,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         // ======================================================
-        // FIRST ATTEMPT
+        // INITIALIZE VIDEO ATTRIBUTES (WITHOUT FORCE-PLAYING ALL AT ONCE)
         // ======================================================
 
         videos.forEach(video => {
@@ -844,19 +817,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             video.playsInline = true;
 
+            video.setAttribute('playsinline', '');
 
-            const playPromise =
-                video.play();
+            video.setAttribute('webkit-playsinline', '');
 
-
-            if (
-                playPromise !== undefined
-            ) {
-
-                playPromise.catch(() => {
-                    // Browser may wait until video becomes visible.
-                });
-            }
+            video.setAttribute('muted', '');
 
 
             // If the video cannot load,
@@ -1353,6 +1318,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 project.type === 'video'
             ) {
 
+                // Pause background gallery videos to free hardware decoders
+                const bgVideos =
+                    galleryGrid.querySelectorAll('video.gallery-video');
+                bgVideos.forEach(v => v.pause());
+
                 const videoUrl =
                     getCompatibleVideoUrl(
                         finalMediaUrl
@@ -1368,6 +1338,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         'video'
                     );
 
+                video.src =
+                    videoUrl;
+
                 video.controls =
                     true;
 
@@ -1377,8 +1350,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 video.playsInline =
                     true;
 
+                video.setAttribute(
+                    'playsinline',
+                    ''
+                );
+
+                video.setAttribute(
+                    'webkit-playsinline',
+                    ''
+                );
+
                 video.preload =
-                    'metadata';
+                    'auto';
 
                 video.style.maxWidth =
                     '100%';
@@ -1417,6 +1400,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 lightboxMediaContainer.appendChild(
                     video
                 );
+
+                video.load();
+
+                const playPromise =
+                    video.play();
+
+                if (
+                    playPromise !==
+                    undefined
+                ) {
+
+                    playPromise.catch(
+                        () => { }
+                    );
+
+                }
 
             }
 
@@ -1484,6 +1483,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             document.body.style.overflow =
                 '';
+
+            const activeVid =
+                lightboxMediaContainer.querySelector('video');
+
+            if (
+                activeVid
+            ) {
+
+                activeVid.pause();
+
+                activeVid.removeAttribute('src');
+
+                activeVid.load();
+
+            }
 
             lightboxMediaContainer.innerHTML =
                 '';
