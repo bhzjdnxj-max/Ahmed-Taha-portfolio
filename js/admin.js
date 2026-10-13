@@ -45,6 +45,41 @@ document.addEventListener('DOMContentLoaded', () => {
         folder
     ) {
 
+        // First attempt: Direct upload to Supabase Storage (portfolio-media)
+        if (window.supabaseClient && window.supabaseClient.storage) {
+            try {
+                const cleanFolder = (folder || 'projects').replace(/^\/+|\/+$/g, '');
+                const cleanPath = `${cleanFolder}/${fileName}`;
+                
+                const { data, error } = await window.supabaseClient.storage
+                    .from('portfolio-media')
+                    .upload(cleanPath, file, {
+                        cacheControl: '3600',
+                        upsert: true,
+                        contentType: file.type || 'video/mp4'
+                    });
+
+                if (!error && data) {
+                    const { data: { publicUrl } } = window.supabaseClient.storage
+                        .from('portfolio-media')
+                        .getPublicUrl(cleanPath);
+
+                    if (publicUrl) {
+                        return {
+                            url: publicUrl,
+                            fileId: data.path || cleanPath,
+                            name: fileName
+                        };
+                    }
+                } else if (error) {
+                    console.warn('Supabase storage upload returned error, trying ImageKit fallback:', error);
+                }
+            } catch (sbErr) {
+                console.warn('Supabase storage upload exception, trying ImageKit fallback:', sbErr);
+            }
+        }
+
+        // Fallback: Upload to ImageKit
         const authResponse =
             await fetch('/api/imagekit-auth');
 
@@ -54,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await authResponse.text();
 
             throw new Error(
-                `Could not get ImageKit authentication. ${errorText}`
+                `Upload authentication failed. ${errorText}`
             );
         }
 
